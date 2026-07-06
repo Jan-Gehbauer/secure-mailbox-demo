@@ -5,13 +5,14 @@
   </header>
 
   <!-- Login -->
-  <section *ngIf="!isLoggedIn" class="card login-card">
+  <section *ngIf="!isLoggedIn()" class="card login-card">
     <h2>Anmelden</h2>
     <p>Gib einen Namen ein, um dich als "Nutzer" zu identifizieren (kein echtes Auth-System, nur zur Demo).</p>
     <div class="form-row">
       <input
         type="text"
-        [(ngModel)]="currentUser"
+        [ngModel]="currentUser()"
+        (ngModelChange)="currentUser.set($event)"
         placeholder="z.B. alice"
         (keyup.enter)="login()"
       />
@@ -20,14 +21,14 @@
   </section>
 
   <!-- Hauptansicht -->
-  <div *ngIf="isLoggedIn">
+  <div *ngIf="isLoggedIn()">
     <div class="user-bar">
-      <span>Angemeldet als <strong>{{ currentUser }}</strong></span>
+      <span>Angemeldet als <strong>{{ currentUser() }}</strong></span>
       <button class="link-button" (click)="logout()">Abmelden</button>
     </div>
 
-    <div *ngIf="errorMessage" class="error-banner">
-      {{ errorMessage }}
+    <div *ngIf="errorMessage()" class="error-banner">
+      {{ errorMessage() }}
     </div>
 
     <div class="grid">
@@ -47,10 +48,10 @@
             Nachricht
             <textarea [(ngModel)]="newMessage.body" name="body" rows="5" required></textarea>
           </label>
-          <button type="submit" [disabled]="sending">
-            {{ sending ? 'Wird gesendet...' : 'Verschlüsselt senden' }}
+          <button type="submit" [disabled]="sending()">
+            {{ sending() ? 'Wird gesendet...' : 'Verschlüsselt senden' }}
           </button>
-          <p *ngIf="sendSuccess" class="success-text">✓ Nachricht wurde verschlüsselt gespeichert.</p>
+          <p *ngIf="sendSuccess()" class="success-text">✓ Nachricht wurde verschlüsselt gespeichert.</p>
         </form>
       </section>
 
@@ -61,11 +62,10 @@
           <button class="link-button" (click)="loadInbox()">🔄 Aktualisieren</button>
         </div>
 
-        <p *ngIf="loadingInbox">Lädt...</p>
-        <p *ngIf="!loadingInbox && inbox.length === 0">Keine Nachrichten.</p>
+        <p *ngIf="inbox().length === 0">Keine Nachrichten.</p>
 
         <div class="message-list">
-          <div *ngFor="let msg of inbox" class="message-item">
+          <div *ngFor="let msg of inbox()" class="message-item">
             <div class="message-meta">
               <strong>{{ msg.subject }}</strong>
               <span class="message-date">{{ msg.createdAt | date:'short' }}</span>

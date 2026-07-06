@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from './services/message.service';
@@ -13,52 +13,53 @@ import { Message } from './models/message.model';
 })
 export class App {
 
-  // "Login" ist bewusst simpel gehalten: nur ein Name, kein echtes
-  // Auth-System. Für die Demo reicht das, um Absender/Empfänger zu simulieren.
-  currentUser = '';
-  isLoggedIn = false;
+  // Signals statt normaler Properties: lösen Change Detection zuverlässig
+  // aus, auch bei asynchronen Antworten (HTTP), unabhängig vom
+  // Zone.js-Verhalten. Das behebt das Problem, dass die Ansicht erst
+  // nach einem manuellen Klick aktualisiert wurde.
 
-  inbox: Message[] = [];
-  loadingInbox = false;
-  errorMessage = '';
+  currentUser = signal('');
+  isLoggedIn = signal(false);
 
-  // Formular für neue Nachricht
+  inbox = signal<Message[]>([]);
+  errorMessage = signal('');
+
+  // Formular für neue Nachricht (einfaches Objekt reicht hier,
+  // da es nur über ngModel durch echte Nutzer-Events verändert wird)
   newMessage = {
     recipient: '',
     subject: '',
     body: ''
   };
-  sending = false;
-  sendSuccess = false;
+  sending = signal(false);
+  sendSuccess = signal(false);
 
   constructor(private messageService: MessageService) {}
 
   login(): void {
-    if (this.currentUser.trim()) {
-      this.isLoggedIn = true;
+    const name = this.currentUser().trim();
+    if (name) {
+      this.isLoggedIn.set(true);
       this.loadInbox();
     }
   }
 
   logout(): void {
-    this.isLoggedIn = false;
-    this.currentUser = '';
-    this.inbox = [];
+    this.isLoggedIn.set(false);
+    this.currentUser.set('');
+    this.inbox.set([]);
   }
 
   loadInbox(): void {
-    this.loadingInbox = true;
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
-    this.messageService.getInbox(this.currentUser).subscribe({
+    this.messageService.getInbox(this.currentUser()).subscribe({
       next: (messages) => {
-        this.inbox = messages;
-        this.loadingInbox = false;
+        this.inbox.set(messages);
       },
       error: (err) => {
         console.error('Fehler beim Laden des Posteingangs', err);
-        this.errorMessage = 'Posteingang konnte nicht geladen werden. Läuft das Backend auf Port 8080?';
-        this.loadingInbox = false;
+        this.errorMessage.set('Posteingang konnte nicht geladen werden. Läuft das Backend auf Port 8080?');
       }
     });
   }
@@ -68,19 +69,19 @@ export class App {
       return;
     }
 
-    this.sending = true;
-    this.sendSuccess = false;
-    this.errorMessage = '';
+    this.sending.set(true);
+    this.sendSuccess.set(false);
+    this.errorMessage.set('');
 
     this.messageService.send({
-      sender: this.currentUser,
+      sender: this.currentUser(),
       recipient: this.newMessage.recipient,
       subject: this.newMessage.subject,
       body: this.newMessage.body
     }).subscribe({
       next: () => {
-        this.sending = false;
-        this.sendSuccess = true;
+        this.sending.set(false);
+        this.sendSuccess.set(true);
         this.newMessage = { recipient: '', subject: '', body: '' };
 
         // Falls man sich selbst geschrieben hat, direkt im Posteingang zeigen
@@ -88,8 +89,8 @@ export class App {
       },
       error: (err) => {
         console.error('Fehler beim Senden', err);
-        this.errorMessage = 'Nachricht konnte nicht gesendet werden.';
-        this.sending = false;
+        this.errorMessage.set('Nachricht konnte nicht gesendet werden.');
+        this.sending.set(false);
       }
     });
   }
