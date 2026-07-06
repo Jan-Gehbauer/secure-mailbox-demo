@@ -48,6 +48,10 @@ export class App {
     this.isLoggedIn.set(false);
     this.currentUser.set('');
     this.inbox.set([]);
+    this.errorMessage.set('');
+    this.sendSuccess.set(false);
+    this.sending.set(false);
+    this.newMessage = { recipient: '', subject: '', body: '' };
   }
 
   loadInbox(): void {
