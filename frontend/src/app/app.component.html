@@ -1,0 +1,80 @@
+<div class="container">
+  <header>
+    <h1>🔒 Secure Mailbox</h1>
+    <p class="subtitle">Demo-Projekt &ndash; Ende-zu-Ende verschlüsselte Nachrichten</p>
+  </header>
+
+  <!-- Login -->
+  <section *ngIf="!isLoggedIn" class="card login-card">
+    <h2>Anmelden</h2>
+    <p>Gib einen Namen ein, um dich als "Nutzer" zu identifizieren (kein echtes Auth-System, nur zur Demo).</p>
+    <div class="form-row">
+      <input
+        type="text"
+        [(ngModel)]="currentUser"
+        placeholder="z.B. alice"
+        (keyup.enter)="login()"
+      />
+      <button (click)="login()">Anmelden</button>
+    </div>
+  </section>
+
+  <!-- Hauptansicht -->
+  <div *ngIf="isLoggedIn">
+    <div class="user-bar">
+      <span>Angemeldet als <strong>{{ currentUser }}</strong></span>
+      <button class="link-button" (click)="logout()">Abmelden</button>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-banner">
+      {{ errorMessage }}
+    </div>
+
+    <div class="grid">
+      <!-- Nachricht senden -->
+      <section class="card">
+        <h2>Neue Nachricht</h2>
+        <form (ngSubmit)="sendMessage()">
+          <label>
+            Empfänger
+            <input type="text" [(ngModel)]="newMessage.recipient" name="recipient" required />
+          </label>
+          <label>
+            Betreff
+            <input type="text" [(ngModel)]="newMessage.subject" name="subject" required />
+          </label>
+          <label>
+            Nachricht
+            <textarea [(ngModel)]="newMessage.body" name="body" rows="5" required></textarea>
+          </label>
+          <button type="submit" [disabled]="sending">
+            {{ sending ? 'Wird gesendet...' : 'Verschlüsselt senden' }}
+          </button>
+          <p *ngIf="sendSuccess" class="success-text">✓ Nachricht wurde verschlüsselt gespeichert.</p>
+        </form>
+      </section>
+
+      <!-- Posteingang -->
+      <section class="card">
+        <div class="inbox-header">
+          <h2>Posteingang</h2>
+          <button class="link-button" (click)="loadInbox()">🔄 Aktualisieren</button>
+        </div>
+
+        <p *ngIf="loadingInbox">Lädt...</p>
+        <p *ngIf="!loadingInbox && inbox.length === 0">Keine Nachrichten.</p>
+
+        <div class="message-list">
+          <div *ngFor="let msg of inbox" class="message-item">
+            <div class="message-meta">
+              <strong>{{ msg.subject }}</strong>
+              <span class="message-date">{{ msg.createdAt | date:'short' }}</span>
+            </div>
+            <div class="message-sender">von {{ msg.sender }}</div>
+            <p class="message-body">{{ msg.body }}</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
