@@ -1,0 +1,55 @@
+package com.privasphere.securemailbox.service;
+
+import com.privasphere.securemailbox.dto.MessageResponse;
+import com.privasphere.securemailbox.dto.SendMessageRequest;
+import com.privasphere.securemailbox.entity.EncryptedMessage;
+import com.privasphere.securemailbox.repository.MessageRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class MessageService {
+
+    private final MessageRepository repository;
+    private final EncryptionService encryptionService;
+
+    public MessageService(MessageRepository repository, EncryptionService encryptionService) {
+        this.repository = repository;
+        this.encryptionService = encryptionService;
+    }
+
+    public MessageResponse send(SendMessageRequest request) {
+        EncryptionService.EncryptedPayload payload = encryptionService.encrypt(request.body());
+
+        EncryptedMessage entity = new EncryptedMessage();
+        entity.setSender(request.sender());
+        entity.setRecipient(request.recipient());
+        entity.setSubject(request.subject());
+        entity.setCiphertext(payload.ciphertextBase64());
+        entity.setIv(payload.ivBase64());
+
+        EncryptedMessage saved = repository.save(entity);
+
+        // Klartext geben wir nur in der API-Response direkt nach dem Senden zurück,
+        // damit der Aufrufer eine Bestätigung sieht - nicht weil wir ihn zwischenspeichern.
+        return MessageResponse.of(saved, request.body());
+    }
+
+    public List<MessageResponse> getInbox(String recipient) {
+        return repository.findByRecipientOrderByCreatedAtDesc(recipient).stream()
+                .map(this::decrypt)
+                .toList();
+    }
+
+    public List<MessageResponse> getSent(String sender) {
+        return repository.findBySenderOrderByCreatedAtDesc(sender).stream()
+                .map(this::decrypt)
+                .toList();
+    }
+
+    private MessageResponse decrypt(EncryptedMessage entity) {
+        String plaintext = encryptionService.decrypt(entity.getCiphertext(), entity.getIv());
+        return MessageResponse.of(entity, plaintext);
+    }
+}
