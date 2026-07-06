@@ -29,7 +29,12 @@ public class EncryptedMessage {
     @Column(nullable = false)
     private String subject;
 
-    // Base64-kodierter Chiffretext (enthält bei GCM bereits das Auth-Tag)
+    // Base64-kodierter Chiffretext (enthält bei GCM bereits das Auth-Tag).
+    // Bewusst columnDefinition="TEXT" statt @Lob: @Lob würde Hibernate bei
+    // Postgres dazu bringen, einen Large Object (OID) zu verwenden, der nur
+    // innerhalb einer Transaktion gelesen werden kann - unsere Read-Endpoints
+    // laufen aber ohne @Transactional im Auto-Commit-Modus. TEXT ist hier
+    // ausreichend und deutlich unkomplizierter.
     @Column(nullable = false, columnDefinition = "TEXT")
     private String ciphertext;
 
@@ -82,14 +87,6 @@ public class EncryptedMessage {
         this.subject = subject;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public String getCiphertext() {
         return ciphertext;
     }
@@ -104,5 +101,13 @@ public class EncryptedMessage {
 
     public void setIv(String iv) {
         this.iv = iv;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

@@ -1,5 +1,11 @@
 services:
 
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"   # SMTP - hier "sendet" das Backend die Mails hin
+      - "8025:8025"   # Web-UI - hier kannst du die "gesendeten" Mails ansehen
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -27,6 +33,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mailhog:
+        condition: service_started
     ports:
       - "8080:8080"
 

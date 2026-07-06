@@ -13,10 +13,15 @@ public class MessageService {
 
     private final MessageRepository repository;
     private final EncryptionService encryptionService;
+    private final NotificationMailService notificationMailService;
 
-    public MessageService(MessageRepository repository, EncryptionService encryptionService) {
+    public MessageService(
+            MessageRepository repository,
+            EncryptionService encryptionService,
+            NotificationMailService notificationMailService) {
         this.repository = repository;
         this.encryptionService = encryptionService;
+        this.notificationMailService = notificationMailService;
     }
 
     public MessageResponse send(SendMessageRequest request) {
@@ -30,6 +35,13 @@ public class MessageService {
         entity.setIv(payload.ivBase64());
 
         EncryptedMessage saved = repository.save(entity);
+
+        // Benachrichtigung per Mail - läuft bewusst NACH dem erfolgreichen
+        // Speichern und wirft bei Fehlern keine Exception (siehe
+        // NotificationMailService), damit ein Mail-Problem niemals das
+        // eigentliche Senden/Speichern der Nachricht verhindert.
+        notificationMailService.sendNewMessageNotification(
+                request.recipient(), request.sender(), request.subject());
 
         // Klartext geben wir nur in der API-Response direkt nach dem Senden zurück,
         // damit der Aufrufer eine Bestätigung sieht - nicht weil wir ihn zwischenspeichern.
