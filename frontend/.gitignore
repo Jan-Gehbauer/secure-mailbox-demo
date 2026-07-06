@@ -1,5 +1,22 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
+# Secrets: niemals committen
+.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Java
+backend/target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
 # Compiled output
 /dist
 /tmp

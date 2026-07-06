@@ -1,0 +1,42 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: securemailbox
+      POSTGRES_USER: ${POSTGRES_USER:-mailbox_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mailbox_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # optional offen, nur praktisch um mit einem DB-Client reinzuschauen
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mailbox_user} -d securemailbox"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_USER: ${POSTGRES_USER:-mailbox_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mailbox_pass}
+      APP_ENCRYPTION_MASTER_KEY_BASE64: ${APP_ENCRYPTION_MASTER_KEY_BASE64}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  postgres_data:

@@ -30,8 +30,7 @@ public class EncryptedMessage {
     private String subject;
 
     // Base64-kodierter Chiffretext (enthält bei GCM bereits das Auth-Tag)
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String ciphertext;
 
     // Base64-kodierter Initialisierungsvektor, pro Nachricht neu generiert
