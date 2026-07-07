@@ -61,6 +61,8 @@ export class App implements OnInit {
   switchAuthMode(mode: AuthMode): void {
     this.authMode.set(mode);
     this.authError.set('');
+    this.loginForm = { username: '', password: '' };
+    this.registerForm = { username: '', email: '', password: '' };
   }
 
   login(): void {
