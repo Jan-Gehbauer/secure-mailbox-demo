@@ -40,6 +40,38 @@ header h1 {
   text-align: center;
 }
 
+.auth-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-tabs button {
+  flex: 1;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.auth-tabs button.active {
+  background: #4f46e5;
+  color: white;
+}
+
+.login-card form {
+  text-align: left;
+}
+
+.login-card form button[type="submit"] {
+  width: 100%;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
 .form-row {
   display: flex;
   gap: 0.5rem;

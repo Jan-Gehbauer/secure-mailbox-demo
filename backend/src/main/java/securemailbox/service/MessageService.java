@@ -24,11 +24,17 @@ public class MessageService {
         this.notificationMailService = notificationMailService;
     }
 
-    public MessageResponse send(SendMessageRequest request) {
+    /**
+     * @param authenticatedSender Benutzername aus dem validierten JWT
+     *                            (SecurityContext), NICHT aus dem Request-Body.
+     *                            Das ist der Kern des IDOR-Fixes: der Client kann
+     *                            nicht mehr behaupten, jemand anderes zu sein.
+     */
+    public MessageResponse send(SendMessageRequest request, String authenticatedSender) {
         EncryptionService.EncryptedPayload payload = encryptionService.encrypt(request.body());
 
         EncryptedMessage entity = new EncryptedMessage();
-        entity.setSender(request.sender());
+        entity.setSender(authenticatedSender);
         entity.setRecipient(request.recipient());
         entity.setSubject(request.subject());
         entity.setCiphertext(payload.ciphertextBase64());
@@ -41,7 +47,7 @@ public class MessageService {
         // NotificationMailService), damit ein Mail-Problem niemals das
         // eigentliche Senden/Speichern der Nachricht verhindert.
         notificationMailService.sendNewMessageNotification(
-                request.recipient(), request.sender(), request.subject());
+                request.recipient(), authenticatedSender, request.subject());
 
         // Klartext geben wir nur in der API-Response direkt nach dem Senden zurück,
         // damit der Aufrufer eine Bestätigung sieht - nicht weil wir ihn zwischenspeichern.

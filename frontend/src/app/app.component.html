@@ -4,26 +4,72 @@
     <p class="subtitle">Demo-Projekt &ndash; Ende-zu-Ende verschlüsselte Nachrichten</p>
   </header>
 
-  <!-- Login -->
-  <section *ngIf="!isLoggedIn()" class="card login-card">
-    <h2>Anmelden</h2>
-    <p>Gib einen Namen ein, um dich als "Nutzer" zu identifizieren (kein echtes Auth-System, nur zur Demo).</p>
-    <div class="form-row">
-      <input
-        type="text"
-        [ngModel]="currentUser()"
-        (ngModelChange)="currentUser.set($event)"
-        placeholder="z.B. alice"
-        (keyup.enter)="login()"
-      />
-      <button (click)="login()">Anmelden</button>
+  <!-- Session wird beim Start einmal über den Refresh-Cookie geprüft -->
+  <section *ngIf="authService.isLoggedIn() === false && sessionRestoring()" class="card login-card">
+    <p>Sitzung wird geprüft...</p>
+  </section>
+
+  <!-- Login / Register -->
+  <section *ngIf="!authService.isLoggedIn() && !sessionRestoring()" class="card login-card">
+    <div class="auth-tabs">
+      <button
+        type="button"
+        [class.active]="authMode() === 'login'"
+        (click)="switchAuthMode('login')">
+        Anmelden
+      </button>
+      <button
+        type="button"
+        [class.active]="authMode() === 'register'"
+        (click)="switchAuthMode('register')">
+        Registrieren
+      </button>
     </div>
+
+    <div *ngIf="authError()" class="error-banner">
+      {{ authError() }}
+    </div>
+
+    <!-- Login-Formular -->
+    <form *ngIf="authMode() === 'login'" (ngSubmit)="login()">
+      <label>
+        Benutzername
+        <input type="text" [(ngModel)]="loginForm.username" name="loginUsername" required autocomplete="username" />
+      </label>
+      <label>
+        Passwort
+        <input type="password" [(ngModel)]="loginForm.password" name="loginPassword" required autocomplete="current-password" />
+      </label>
+      <button type="submit" [disabled]="authLoading()">
+        {{ authLoading() ? 'Wird geprüft...' : 'Anmelden' }}
+      </button>
+    </form>
+
+    <!-- Registrierungs-Formular -->
+    <form *ngIf="authMode() === 'register'" (ngSubmit)="register()">
+      <label>
+        Benutzername
+        <input type="text" [(ngModel)]="registerForm.username" name="registerUsername" required autocomplete="username" />
+      </label>
+      <label>
+        E-Mail
+        <input type="email" [(ngModel)]="registerForm.email" name="registerEmail" required autocomplete="email" />
+      </label>
+      <label>
+        Passwort
+        <input type="password" [(ngModel)]="registerForm.password" name="registerPassword" required minlength="12" autocomplete="new-password" />
+      </label>
+      <p class="hint">Mindestens 12 Zeichen. Eine Passphrase (mehrere Wörter) ist sicherer als kurze Passwörter mit Sonderzeichen.</p>
+      <button type="submit" [disabled]="authLoading()">
+        {{ authLoading() ? 'Wird angelegt...' : 'Konto erstellen' }}
+      </button>
+    </form>
   </section>
 
   <!-- Hauptansicht -->
-  <div *ngIf="isLoggedIn()">
+  <div *ngIf="authService.isLoggedIn()">
     <div class="user-bar">
-      <span>Angemeldet als <strong>{{ currentUser() }}</strong></span>
+      <span>Angemeldet als <strong>{{ authService.username() }}</strong></span>
       <button class="link-button" (click)="logout()">Abmelden</button>
     </div>
 

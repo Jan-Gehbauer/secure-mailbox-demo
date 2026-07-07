@@ -30,6 +30,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-mailbox_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mailbox_pass}
       APP_ENCRYPTION_MASTER_KEY_BASE64: ${APP_ENCRYPTION_MASTER_KEY_BASE64}
+      APP_JWT_SECRET_BASE64: ${APP_JWT_SECRET_BASE64}
     depends_on:
       postgres:
         condition: service_healthy

@@ -18,11 +18,17 @@ export class MessageService {
     return this.http.post<Message>(this.baseUrl, request);
   }
 
-  getInbox(recipient: string): Observable<Message[]> {
-    return this.http.get<Message[]>(`${this.baseUrl}/inbox/${recipient}`);
+  /**
+   * Kein Pfad-Parameter mehr für "wessen Inbox" - das Backend liest die
+   * Identität ausschliesslich aus dem validierten JWT (siehe
+   * MessageController). Der Auth-Interceptor hängt den Bearer-Token
+   * automatisch an, hier ist nichts weiter zu tun.
+   */
+  getInbox(): Observable<Message[]> {
+    return this.http.get<Message[]>(`${this.baseUrl}/inbox`);
   }
 
-  getSent(sender: string): Observable<Message[]> {
-    return this.http.get<Message[]>(`${this.baseUrl}/sent/${sender}`);
+  getSent(): Observable<Message[]> {
+    return this.http.get<Message[]>(`${this.baseUrl}/sent`);
   }
 }

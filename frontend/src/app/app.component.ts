@@ -1,8 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MessageService } from './services/message.service';
+import { AuthService } from './services/auth.service';
 import { Message } from './models/message.model';
+
+type AuthMode = 'login' | 'register';
 
 @Component({
   selector: 'app-root',
@@ -11,21 +15,23 @@ import { Message } from './models/message.model';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class App {
+export class App implements OnInit {
 
   // Signals statt normaler Properties: lösen Change Detection zuverlässig
   // aus, auch bei asynchronen Antworten (HTTP), unabhängig vom
-  // Zone.js-Verhalten. Das behebt das Problem, dass die Ansicht erst
-  // nach einem manuellen Klick aktualisiert wurde.
+  // Zone.js-Verhalten.
 
-  currentUser = signal('');
-  isLoggedIn = signal(false);
+  authMode = signal<AuthMode>('login');
+  authError = signal('');
+  authLoading = signal(false);
+  sessionRestoring = signal(true);
+
+  loginForm = { username: '', password: '' };
+  registerForm = { username: '', email: '', password: '' };
 
   inbox = signal<Message[]>([]);
   errorMessage = signal('');
 
-  // Formular für neue Nachricht (einfaches Objekt reicht hier,
-  // da es nur über ngModel durch echte Nutzer-Events verändert wird)
   newMessage = {
     recipient: '',
     subject: '',
@@ -34,19 +40,73 @@ export class App {
   sending = signal(false);
   sendSuccess = signal(false);
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    public authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    // Der Access-Token lebt nur im Speicher (siehe AuthService) und ist
+    // nach einem Seiten-Reload weg - hier versuchen wir einmal, über den
+    // httpOnly-Refresh-Cookie automatisch eine bestehende Session
+    // wiederherzustellen, damit man nicht bei jedem F5 neu einloggen muss.
+    this.authService.initializeSession().subscribe(() => {
+      this.sessionRestoring.set(false);
+      if (this.authService.isLoggedIn()) {
+        this.loadInbox();
+      }
+    });
+  }
+
+  switchAuthMode(mode: AuthMode): void {
+    this.authMode.set(mode);
+    this.authError.set('');
+  }
 
   login(): void {
-    const name = this.currentUser().trim();
-    if (name) {
-      this.isLoggedIn.set(true);
-      this.loadInbox();
+    if (!this.loginForm.username || !this.loginForm.password) {
+      return;
     }
+
+    this.authLoading.set(true);
+    this.authError.set('');
+
+    this.authService.login({ ...this.loginForm }).subscribe({
+      next: () => {
+        this.authLoading.set(false);
+        this.loginForm = { username: '', password: '' };
+        this.loadInbox();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.authLoading.set(false);
+        this.authError.set(this.extractAuthErrorMessage(err, 'Anmeldung fehlgeschlagen.'));
+      }
+    });
+  }
+
+  register(): void {
+    if (!this.registerForm.username || !this.registerForm.email || !this.registerForm.password) {
+      return;
+    }
+
+    this.authLoading.set(true);
+    this.authError.set('');
+
+    this.authService.register({ ...this.registerForm }).subscribe({
+      next: () => {
+        this.authLoading.set(false);
+        this.registerForm = { username: '', email: '', password: '' };
+        this.loadInbox();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.authLoading.set(false);
+        this.authError.set(this.extractAuthErrorMessage(err, 'Registrierung fehlgeschlagen.'));
+      }
+    });
   }
 
   logout(): void {
-    this.isLoggedIn.set(false);
-    this.currentUser.set('');
+    this.authService.logout();
     this.inbox.set([]);
     this.errorMessage.set('');
     this.sendSuccess.set(false);
@@ -57,7 +117,7 @@ export class App {
   loadInbox(): void {
     this.errorMessage.set('');
 
-    this.messageService.getInbox(this.currentUser()).subscribe({
+    this.messageService.getInbox().subscribe({
       next: (messages) => {
         this.inbox.set(messages);
       },
@@ -78,7 +138,6 @@ export class App {
     this.errorMessage.set('');
 
     this.messageService.send({
-      sender: this.currentUser(),
       recipient: this.newMessage.recipient,
       subject: this.newMessage.subject,
       body: this.newMessage.body
@@ -97,5 +156,21 @@ export class App {
         this.sending.set(false);
       }
     });
+  }
+
+  private extractAuthErrorMessage(err: HttpErrorResponse, fallback: string): string {
+    if (err.status === 0) {
+      return 'Backend nicht erreichbar. Läuft es auf Port 8080?';
+    }
+    if (err.error?.message) {
+      return err.error.message as string;
+    }
+    if (err.error?.details) {
+      const firstDetail = Object.values(err.error.details as Record<string, string>)[0];
+      if (firstDetail) {
+        return firstDetail;
+      }
+    }
+    return fallback;
   }
 }

@@ -8,7 +8,6 @@ export interface Message {
 }
 
 export interface SendMessageRequest {
-  sender: string;
   recipient: string;
   subject: string;
   body: string;
