@@ -5,75 +5,77 @@
   </header>
 
   <!-- Session wird beim Start einmal über den Refresh-Cookie geprüft -->
-  <section *ngIf="authService.isLoggedIn() === false && sessionRestoring()" class="card login-card">
+  <section *ngIf="authService.isLoggedIn() === false && sessionRestoring()" class="card login-card" data-cy="session-restoring">
     <p>Sitzung wird geprüft...</p>
   </section>
 
   <!-- Login / Register -->
-  <section *ngIf="!authService.isLoggedIn() && !sessionRestoring()" class="card login-card">
+  <section *ngIf="!authService.isLoggedIn() && !sessionRestoring()" class="card login-card" data-cy="auth-section">
     <div class="auth-tabs">
       <button
         type="button"
         [class.active]="authMode() === 'login'"
-        (click)="switchAuthMode('login')">
+        (click)="switchAuthMode('login')"
+        data-cy="auth-tab-login">
         Anmelden
       </button>
       <button
         type="button"
         [class.active]="authMode() === 'register'"
-        (click)="switchAuthMode('register')">
+        (click)="switchAuthMode('register')"
+        data-cy="auth-tab-register">
         Registrieren
       </button>
     </div>
 
-    <div *ngIf="authError()" class="error-banner">
+    <div *ngIf="authError()" class="error-banner" data-cy="auth-error">
       {{ authError() }}
     </div>
 
     <!-- Login-Formular -->
-    <form *ngIf="authMode() === 'login'" (ngSubmit)="login()">
+    <form *ngIf="authMode() === 'login'" (ngSubmit)="login()" data-cy="login-form">
       <label>
         Benutzername
-        <input type="text" [(ngModel)]="loginForm.username" name="loginUsername" required autocomplete="username" />
+        <input type="text" [(ngModel)]="loginForm.username" name="loginUsername" required autocomplete="username" data-cy="login-username" />
       </label>
       <label>
         Passwort
-        <input type="password" [(ngModel)]="loginForm.password" name="loginPassword" required autocomplete="current-password" />
+        <input type="password" [(ngModel)]="loginForm.password" name="loginPassword" required autocomplete="current-password" data-cy="login-password" />
       </label>
-      <button type="submit" [disabled]="authLoading()">
+      <button type="submit" [disabled]="authLoading()" data-cy="login-submit">
         {{ authLoading() ? 'Wird geprüft...' : 'Anmelden' }}
       </button>
     </form>
 
     <!-- Registrierungs-Formular -->
-    <form *ngIf="authMode() === 'register'" (ngSubmit)="register()">
+    <form *ngIf="authMode() === 'register'" (ngSubmit)="register()" data-cy="register-form">
       <label>
         Benutzername
-        <input type="text" [(ngModel)]="registerForm.username" name="registerUsername" required autocomplete="username" />
+        <input type="text" [(ngModel)]="registerForm.username" name="registerUsername" required autocomplete="username" data-cy="register-username" />
       </label>
       <label>
         E-Mail
-        <input type="email" [(ngModel)]="registerForm.email" name="registerEmail" required autocomplete="email" />
+        <input type="email" [(ngModel)]="registerForm.email" name="registerEmail" required autocomplete="email" data-cy="register-email" />
       </label>
       <label>
         Passwort
-        <input type="password" [(ngModel)]="registerForm.password" name="registerPassword" required minlength="12" autocomplete="new-password" />
+        <input type="password" [(ngModel)]="registerForm.password" name="registerPassword" required minlength="12" autocomplete="new-password" data-cy="register-password" />
       </label>
       <p class="hint">Mindestens 12 Zeichen. Eine Passphrase (mehrere Wörter) ist sicherer als kurze Passwörter mit Sonderzeichen.</p>
-      <button type="submit" [disabled]="authLoading()">
+      <button type="submit" [disabled]="authLoading()" data-cy="register-submit">
         {{ authLoading() ? 'Wird angelegt...' : 'Konto erstellen' }}
       </button>
     </form>
   </section>
 
   <!-- Hauptansicht -->
-  <div *ngIf="authService.isLoggedIn()">
+  <div *ngIf="authService.isLoggedIn()" data-cy="main-view">
     <div class="user-bar">
-      <span>Angemeldet als <strong>{{ authService.username() }}</strong></span>
-      <button class="link-button" (click)="logout()">Abmelden</button>
+      <span>Angemeldet als <strong data-cy="current-username">{{ authService.username() }}</strong></span>
+      <button class="link-button" (click)="logout()" data-cy="logout-button">Abmelden</button>
     </div>
 
-    <div *ngIf="errorMessage()" class="error-banner">
+    <div *ngIf="errorMessage()" class="error-banner" data-cy="general-error">
       {{ errorMessage() }}
     </div>
 
@@ -81,23 +83,23 @@
       <!-- Nachricht senden -->
       <section class="card">
         <h2>Neue Nachricht</h2>
-        <form (ngSubmit)="sendMessage()">
+        <form (ngSubmit)="sendMessage()" data-cy="send-message-form">
           <label>
             Empfänger
-            <input type="text" [(ngModel)]="newMessage.recipient" name="recipient" required />
+            <input type="text" [(ngModel)]="newMessage.recipient" name="recipient" required data-cy="message-recipient" />
           </label>
           <label>
             Betreff
-            <input type="text" [(ngModel)]="newMessage.subject" name="subject" required />
+            <input type="text" [(ngModel)]="newMessage.subject" name="subject" required data-cy="message-subject" />
           </label>
           <label>
             Nachricht
-            <textarea [(ngModel)]="newMessage.body" name="body" rows="5" required></textarea>
+            <textarea [(ngModel)]="newMessage.body" name="body" rows="5" required data-cy="message-body"></textarea>
           </label>
-          <button type="submit" [disabled]="sending()">
+          <button type="submit" [disabled]="sending()" data-cy="send-message-submit">
             {{ sending() ? 'Wird gesendet...' : 'Verschlüsselt senden' }}
           </button>
-          <p *ngIf="sendSuccess()" class="success-text">✓ Nachricht wurde verschlüsselt gespeichert.</p>
+          <p *ngIf="sendSuccess()" class="success-text" data-cy="send-success">✓ Nachricht wurde verschlüsselt gespeichert.</p>
         </form>
       </section>
 
@@ -105,19 +107,19 @@
       <section class="card">
         <div class="inbox-header">
           <h2>Posteingang</h2>
-          <button class="link-button" (click)="loadInbox()">🔄 Aktualisieren</button>
+          <button class="link-button" (click)="loadInbox()" data-cy="refresh-inbox">🔄 Aktualisieren</button>
         </div>
 
-        <p *ngIf="inbox().length === 0">Keine Nachrichten.</p>
+        <p *ngIf="inbox().length === 0" data-cy="inbox-empty">Keine Nachrichten.</p>
 
-        <div class="message-list">
-          <div *ngFor="let msg of inbox()" class="message-item">
+        <div class="message-list" data-cy="inbox-list">
+          <div *ngFor="let msg of inbox()" class="message-item" data-cy="inbox-item">
             <div class="message-meta">
-              <strong>{{ msg.subject }}</strong>
+              <strong data-cy="inbox-item-subject">{{ msg.subject }}</strong>
               <span class="message-date">{{ msg.createdAt | date:'short' }}</span>
             </div>
-            <div class="message-sender">von {{ msg.sender }}</div>
-            <p class="message-body">{{ msg.body }}</p>
+            <div class="message-sender" data-cy="inbox-item-sender">von {{ msg.sender }}</div>
+            <p class="message-body" data-cy="inbox-item-body">{{ msg.body }}</p>
           </div>
         </div>
       </section>

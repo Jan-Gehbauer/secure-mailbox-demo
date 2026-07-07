@@ -59,3 +59,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
