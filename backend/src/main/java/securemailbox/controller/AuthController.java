@@ -58,7 +58,6 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Benutzername bereits vergeben");
@@ -74,7 +73,7 @@ public class AuthController {
         user.setRole(User.Role.USER);
         userRepository.save(user);
 
-        return issueTokens(user);
+        return issueTokens(user, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
@@ -93,7 +92,7 @@ public class AuthController {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ungültige Anmeldedaten"));
 
-        return issueTokens(user);
+        return issueTokens(user, HttpStatus.OK);
     }
 
     @PostMapping("/refresh")
@@ -104,7 +103,7 @@ public class AuthController {
         RefreshTokenService.RotationResult result = refreshTokenService.rotate(rawToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh-Token ungültig oder abgelaufen"));
 
-        return buildAuthResponse(result.user(), result.newRawToken());
+        return buildAuthResponse(result.user(), result.newRawToken(), HttpStatus.OK);
     }
 
     @PostMapping("/logout")
@@ -125,12 +124,12 @@ public class AuthController {
                 .build();
     }
 
-    private ResponseEntity<AuthResponse> issueTokens(User user) {
+    private ResponseEntity<AuthResponse> issueTokens(User user, HttpStatus status) {
         String rawRefreshToken = refreshTokenService.issue(user);
-        return buildAuthResponse(user, rawRefreshToken);
+        return buildAuthResponse(user, rawRefreshToken, status);
     }
 
-    private ResponseEntity<AuthResponse> buildAuthResponse(User user, String rawRefreshToken) {
+    private ResponseEntity<AuthResponse> buildAuthResponse(User user, String rawRefreshToken, HttpStatus status) {
         String accessToken = jwtService.generateAccessToken(user.getUsername(), user.getRole().name());
 
         ResponseCookie refreshCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, rawRefreshToken)
@@ -148,7 +147,7 @@ public class AuthController {
                 user.getRole().name()
         );
 
-        return ResponseEntity.ok()
+        return ResponseEntity.status(status)
                 .header("Set-Cookie", refreshCookie.toString())
                 .body(body);
     }
