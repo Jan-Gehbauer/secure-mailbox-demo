@@ -4,14 +4,17 @@ import securemailbox.dto.MessageResponse;
 import securemailbox.dto.SendMessageRequest;
 import securemailbox.entity.EncryptedMessage;
 import securemailbox.repository.MessageRepository;
+import securemailbox.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -26,6 +29,7 @@ class MessageServiceTest {
     private MessageRepository repository;
     private EncryptionService encryptionService;
     private NotificationMailService notificationMailService;
+    private UserRepository userRepository;
     private MessageService messageService;
 
     @BeforeEach
@@ -33,7 +37,12 @@ class MessageServiceTest {
         repository = mock(MessageRepository.class);
         encryptionService = mock(EncryptionService.class);
         notificationMailService = mock(NotificationMailService.class);
-        messageService = new MessageService(repository, encryptionService, notificationMailService);
+        userRepository = mock(UserRepository.class);
+        messageService = new MessageService(repository, encryptionService, notificationMailService, userRepository);
+
+        // Standardfall fuer die meisten Tests: Empfaenger existiert.
+        // Der explizite Ablehnungsfall wird in einem eigenen Test unten geprueft.
+        when(userRepository.existsByUsername(any())).thenReturn(true);
     }
 
     @Test
@@ -99,6 +108,20 @@ class MessageServiceTest {
         assertThat(inbox).hasSize(1);
         assertThat(inbox.get(0).body()).isEqualTo("Entschlüsselter Text");
         assertThat(inbox.get(0).sender()).isEqualTo("alice");
+    }
+
+    @Test
+    void send_rejectsWhenRecipientDoesNotExist() {
+        SendMessageRequest request = new SendMessageRequest("geist", "Betreff", "Inhalt");
+        when(userRepository.existsByUsername("geist")).thenReturn(false);
+
+        assertThatThrownBy(() -> messageService.send(request, "alice"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("geist");
+
+        // Es darf in diesem Fall NICHTS gespeichert oder verschickt werden
+        verify(repository, never()).save(any());
+        verifyNoInteractions(notificationMailService);
     }
 
     @Test

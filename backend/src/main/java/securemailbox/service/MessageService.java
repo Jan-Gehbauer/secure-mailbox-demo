@@ -4,7 +4,10 @@ import securemailbox.dto.MessageResponse;
 import securemailbox.dto.SendMessageRequest;
 import securemailbox.entity.EncryptedMessage;
 import securemailbox.repository.MessageRepository;
+import securemailbox.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -14,14 +17,17 @@ public class MessageService {
     private final MessageRepository repository;
     private final EncryptionService encryptionService;
     private final NotificationMailService notificationMailService;
+    private final UserRepository userRepository;
 
     public MessageService(
             MessageRepository repository,
             EncryptionService encryptionService,
-            NotificationMailService notificationMailService) {
+            NotificationMailService notificationMailService,
+            UserRepository userRepository) {
         this.repository = repository;
         this.encryptionService = encryptionService;
         this.notificationMailService = notificationMailService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -31,6 +37,11 @@ public class MessageService {
      *                            nicht mehr behaupten, jemand anderes zu sein.
      */
     public MessageResponse send(SendMessageRequest request, String authenticatedSender) {
+        if (!userRepository.existsByUsername(request.recipient())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Empfänger '" + request.recipient() + "' existiert nicht");
+        }
+
         EncryptionService.EncryptedPayload payload = encryptionService.encrypt(request.body());
 
         EncryptedMessage entity = new EncryptedMessage();
