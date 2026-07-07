@@ -1,3 +1,5 @@
+https://github.com/user-attachments/assets/92025681-7849-47be-80c0-7d2f9405be36
+
 # Secure Mailbox – Demo-Projekt
 
 Eine kleine, aber vollständige Full-Stack-Anwendung für Ende-zu-Ende-artige,
