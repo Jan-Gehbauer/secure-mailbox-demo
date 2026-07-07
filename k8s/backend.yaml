@@ -40,6 +40,11 @@ spec:
                 secretKeyRef:
                   name: securemailbox-secrets
                   key: APP_ENCRYPTION_MASTER_KEY_BASE64
+            - name: APP_JWT_SECRET_BASE64
+              valueFrom:
+                secretKeyRef:
+                  name: securemailbox-secrets
+                  key: APP_JWT_SECRET_BASE64
           readinessProbe:
             tcpSocket:
               port: 8080
