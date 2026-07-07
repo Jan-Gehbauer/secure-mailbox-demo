@@ -1,4 +1,4 @@
-package com.privasphere.securemailbox.dto;
+package securemailbox.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

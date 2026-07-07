@@ -1,8 +1,8 @@
-package com.privasphere.securemailbox.controller;
+package securemailbox.controller;
 
-import com.privasphere.securemailbox.dto.MessageResponse;
-import com.privasphere.securemailbox.dto.SendMessageRequest;
-import com.privasphere.securemailbox.service.MessageService;
+import securemailbox.dto.MessageResponse;
+import securemailbox.dto.SendMessageRequest;
+import securemailbox.service.MessageService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

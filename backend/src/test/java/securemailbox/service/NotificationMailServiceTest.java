@@ -1,4 +1,4 @@
-package com.privasphere.securemailbox.service;
+package securemailbox.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

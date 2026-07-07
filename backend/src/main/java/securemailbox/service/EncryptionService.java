@@ -1,4 +1,4 @@
-package com.privasphere.securemailbox.service;
+package securemailbox.service;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,4 +1,4 @@
-package com.privasphere.securemailbox.entity;
+package securemailbox.entity;
 
 import jakarta.persistence.*;
 

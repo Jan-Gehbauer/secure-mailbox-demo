@@ -1,6 +1,6 @@
-package com.privasphere.securemailbox.dto;
+package securemailbox.dto;
 
-import com.privasphere.securemailbox.entity.EncryptedMessage;
+import securemailbox.entity.EncryptedMessage;
 
 import java.time.Instant;
 

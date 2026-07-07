@@ -1,6 +1,6 @@
-package com.privasphere.securemailbox.repository;
+package securemailbox.repository;
 
-import com.privasphere.securemailbox.entity.EncryptedMessage;
+import securemailbox.entity.EncryptedMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

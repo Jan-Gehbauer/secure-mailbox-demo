@@ -1,9 +1,9 @@
-package com.privasphere.securemailbox.service;
+package securemailbox.service;
 
-import com.privasphere.securemailbox.dto.MessageResponse;
-import com.privasphere.securemailbox.dto.SendMessageRequest;
-import com.privasphere.securemailbox.entity.EncryptedMessage;
-import com.privasphere.securemailbox.repository.MessageRepository;
+import securemailbox.dto.MessageResponse;
+import securemailbox.dto.SendMessageRequest;
+import securemailbox.entity.EncryptedMessage;
+import securemailbox.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
