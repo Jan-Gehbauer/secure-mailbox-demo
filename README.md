@@ -1,5 +1,3 @@
-https://github.com/user-attachments/assets/92025681-7849-47be-80c0-7d2f9405be36
-
 # Secure Mailbox – Demo-Projekt
 
 Eine kleine, aber vollständige Full-Stack-Anwendung für Ende-zu-Ende-artige,
@@ -19,15 +17,16 @@ TypeScript/Angular, Docker, Kubernetes, IT-Security, automatisierte Tests).
 ## Inhaltsverzeichnis
 
 1. [Überblick](#überblick)
-2. [Architektur](#architektur)
-3. [Tech-Stack](#tech-stack)
-4. [Sicherheitsmodell](#sicherheitsmodell)
-5. [Wichtige Design-Entscheidungen](#wichtige-design-entscheidungen)
-6. [Teststrategie](#teststrategie)
-7. [Setup & Ausführen](#setup--ausführen)
-8. [Projektstruktur](#projektstruktur)
-9. [Bekannte Einschränkungen & nächste Schritte](#bekannte-einschränkungen--nächste-schritte)
-10. [Bezug zur Stellenausschreibung](#bezug-zur-stellenausschreibung)
+2. [Demo-Video](#demo-video)
+3. [Architektur](#architektur)
+4. [Tech-Stack](#tech-stack)
+5. [Sicherheitsmodell](#sicherheitsmodell)
+6. [Wichtige Design-Entscheidungen](#wichtige-design-entscheidungen)
+7. [Teststrategie](#teststrategie)
+8. [Setup & Ausführen](#setup--ausführen)
+9. [Projektstruktur](#projektstruktur)
+10. [Bekannte Einschränkungen & nächste Schritte](#bekannte-einschränkungen--nächste-schritte)
+11. [Bezug zur Stellenausschreibung](#bezug-zur-stellenausschreibung)
 
 ---
 
@@ -47,6 +46,13 @@ Die Anwendung läuft wahlweise:
 - lokal ohne Container (H2-Datenbank, direkt über IntelliJ/`ng serve`),
 - vollständig containerisiert über **Docker Compose** (Postgres + MailHog),
 - oder in einem lokalen **Kubernetes**-Cluster (Minikube/kind).
+
+## Demo-Video
+
+https://github.com/user-attachments/assets/92025681-7849-47be-80c0-7d2f9405be36
+
+Kurzer Rundgang (Registrierung → Nachricht senden → Posteingang) durch die
+laufende Anwendung.
 
 ## Architektur
 
